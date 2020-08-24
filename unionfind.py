@@ -52,7 +52,15 @@ class QuickUnion:
 		"""Return string representation of Quick-Union"""
 		return str(self.parent)
 
-	def _root(self, p: int, halving: bool=True) -> int:
+	def connected(self, p: int, q: int) -> bool:
+		"""Return True if p & q are connected ~ O(logN) on average"""
+		return self.find(p) == self.find(q)
+
+	def count(self) -> int:
+		"""Return the number of disjoint components ~ O(1)"""
+		return self.count
+
+	def find(self, p: int, halving: bool=True) -> int:
 		"""Return the root of object at p ~ O(logN) on average
 
 		Arguments:
@@ -64,18 +72,6 @@ class QuickUnion:
 			p = self.parent[p]
 		return p 
 
-	def connected(self, p: int, q: int) -> bool:
-		"""Return True if p & q are connected ~ O(logN) on average"""
-		return self._root(p) == self._root(q)
-
-	def count(self) -> int:
-		"""Return the number of disjoint components ~ O(1)"""
-		return self.count
-
-	def find(self, p: int) -> int:
-		"""Return the membership of p ~ O(logN) on average"""
-		return self._root(p)
-
 	def union(self, p: int, q: int, weighting: bool=True) -> None:
 		"""Connect p & q ~ O(logN) on average
 
@@ -86,7 +82,7 @@ class QuickUnion:
 		tree to achieve better balance. If weighting is off, p-tree is linked 
 		to q-tree (i.e. set parent of p-root to q-root).
 		"""
-		prt, qrt = self._root(p), self._root(q)
+		prt, qrt = self.find(p), self.find(q)
 		if prt == qrt: return #already linked
 		if weighting and self.size[prt] > self.size[qrt]: 
 			prt, qrt = qrt, prt #p-tree is smaller 

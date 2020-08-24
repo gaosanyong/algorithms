@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
 
 	"""Test client for QuickUnion"""
-	uf = QuickUnion(10)
+	uf = UnionFind(10)
 	uf.union(4, 3)
 	uf.union(3, 8)
 	uf.union(6, 5)

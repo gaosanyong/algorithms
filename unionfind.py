@@ -24,11 +24,11 @@ Reference:
 [1] https://algs4.cs.princeton.edu/
 """
 
-class QuickUnion:
-	"""Quick-Union abstracts union-find problem into a parent array, in 
+class UnionFind:
+	"""UnionFind abstracts union-find problem into a parent array, in 
 	which two objects, p & q, are connected iff their roots	are the same.
 
-	Quick Union is a "lazy" approach.
+	UnionFind (aka Quick Union) is a "lazy" approach.
 
 	In addition, two 
 	techniques are used to improve performance: 
@@ -40,55 +40,51 @@ class QuickUnion:
 		"""Initialize a Quick-Union object ~ O(N)
 		In Quick-Union, connected components are reflected in common root. 
 		"""
-		self.count = N               #count of disjoint components
-		self.parent = list(range(N)) #parent array (to reflect subsets)
-		self.size = [1] * N          #size of subtree rooted at node 
+		self.count = N               # count of disjoint components
+		self.parent = list(range(N)) # parent array (to reflect subsets)
+		self.rank = [1] * N          # size of subtree
 
 	def __len__(self):
-		"""Return number of nodes (not number of disjoint components)"""
+		"""Return number of nodes (not number of disjoint components)."""
 		return len(self.parent)
 
 	def __repr__(self):
-		"""Return string representation of Quick-Union"""
+		"""Return string representation of Quick-Union."""
 		return str(self.parent)
 
 	def connected(self, p: int, q: int) -> bool:
-		"""Return True if p & q are connected ~ O(logN) on average"""
+		"""Return True if p & q are connected ~ O(1) on average."""
 		return self.find(p) == self.find(q)
 
 	def count(self) -> int:
-		"""Return the number of disjoint components ~ O(1)"""
+		"""Return the number of disjoint components ~ O(1)."""
 		return self.count
 
 	def find(self, p: int, halving: bool=True) -> int:
-		"""Return the root of object at p ~ O(logN) on average
-
-		Arguments:
-		halving -- a flag to turn on path halving (default to True) 
+		"""Return the root of object at p with path compression ~ O(1) on 
+		average.
 		"""
-		while p != self.parent[p]:
-			#update parent to grand parent (path halving)
-			if halving: self.parent[p] = self.parent[self.parent[p]]
-			p = self.parent[p]
-		return p 
+		if p != self.parent[p]:
+			self.parent[p] = self.find(self.parent[p]) # path compression
+		return self.parent[p]
 
-	def union(self, p: int, q: int, weighting: bool=True) -> None:
-		"""Connect p & q ~ O(logN) on average
+	def union(self, p: int, q: int, ranking: bool=True) -> None:
+		"""Connect p & q ~ O(1) on average
 
 		Arguments:
-		weighting -- a flag to turn on tree weighting
+		ranking -- a flag to turn on tree ranking
 
-		If weighting is on, the smaller tree is always linked to the larger 
-		tree to achieve better balance. If weighting is off, p-tree is linked 
+		If ranking is on, the smaller tree is always linked to the larger 
+		tree to achieve better balance. If ranking is off, p-tree is linked 
 		to q-tree (i.e. set parent of p-root to q-root).
 		"""
 		prt, qrt = self.find(p), self.find(q)
 		if prt == qrt: return #already linked
-		if weighting and self.size[prt] > self.size[qrt]: 
+		if ranking and self.rank[prt] > self.rank[qrt]: 
 			prt, qrt = qrt, prt #p-tree is smaller 
 		self.count -= 1
-		self.parent[prt] = qrt #link small tree to large tree
-		self.size[qrt] += self.size[prt] #update large tree size
+		self.parent[prt] = qrt #link p-tree to q-tree
+		self.rank[qrt] += self.rank[prt] #update q-tree size
 
 
 class QuickFind:
@@ -133,10 +129,6 @@ class QuickFind:
 		self.count -= 1
 		for i, iid in enumerate(self.id):
 			if iid == pid: self.id[i] = qid
-
-
-class UnionFind(QuickUnion):
-	pass 
 
 
 if __name__ == "__main__": 

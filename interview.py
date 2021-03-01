@@ -1,5 +1,12 @@
 """INTERVIEW QUESTIONS"""
 
+"""BIT OPERATIONS 
+
+n & n-1 # unset last set bit 
+n & -n # retain last set bit 
+"""
+
+
 """
 Fibonacci numbers were introduced by Italian mathematician Fibonacci in his 
 1202 book Liber Abaci as
@@ -202,7 +209,6 @@ def KMP(pattern, text):
     determine where the next match could begin, thus bypassing re-examination 
     of previously matched characters
     """
-    m = len(pattern)
     
     """building longest prefix-suffix (lps) array
     lps[i] stores length of maximum proper prefix which is also a suffix in 
@@ -212,21 +218,21 @@ def KMP(pattern, text):
     
     For example, "aaab" results in an lps of [0,1,2,0]. 
     """
-    lps = [0] * m #longest prefix-suffix array
+    lps = [0] #longest prefix-suffix array
     k = 0
-    for i in range(1, m):
+    for i in range(1, len(pattern)):
         while k and pattern[k] != pattern[i]: 
             k = lps[k-1]
         if pattern[i] == pattern[k]: k += 1
-        lps[i] = k
+        lps.append(k)
     
     """Given an lps array which indicates where to start a new match in the 
     event of a mismatch, we continue searching from pattern[lps[j-1]]."""
     k = 0
-    for i, letter in enumerate(text): 
-        while k and pattern[k] != letter:
+    for i in range(len(text)): 
+        while k and pattern[k] != text[i]:
             k = lps[k-1]
-        if pattern[k] == letter: k += 1
+        if pattern[k] == text[i]: k += 1
         if k == m: return i - m + 1
     return -1 
     
@@ -285,6 +291,34 @@ def bsort(A):
         if x: ans.extend([i]*x)
     return ans 
 
+
+def qsort(nums: List[int]) -> List[int]:
+    """Quick sort O(NlogN)"""
+    shuffle(nums) # statistical guarantee of O(NlogN)
+    
+    def part(lo, hi): 
+        """Return a random partition of nums[lo:hi]."""
+        i, j = lo+1, hi-1
+        while i <= j: 
+            if nums[i] < nums[lo]: i += 1
+            elif nums[j] > nums[lo]: j -= 1
+            else: 
+                nums[i], nums[j] = nums[j], nums[i]
+                i += 1
+                j -= 1
+        nums[lo], nums[j] = nums[j], nums[lo]
+        return j
+        
+    def sort(lo, hi): 
+        """Sort subarray nums[lo:hi] in place."""
+        if lo + 1 >= hi: return 
+        mid = part(lo, hi)
+        sort(lo, mid)
+        sort(mid+1, hi)
+        
+    sort(0, len(nums))
+    return nums
+
 ### reproducing product functionality 
 ### product(["abc", "def", "ghi"])
 def op(x, y):
@@ -293,10 +327,10 @@ def op(x, y):
 
 product = lambda x: reduce(op, x)
 
-def product(x):
-    """naive implementation of python product function"""
-    if not x: return [""]
-    return [xx+yy for xx in x[0] for yy in product(x[1:])]
+def product(*args):
+    """A naive implementation of python product function"""
+    if not args: return [[]]
+    return [[x]+y for x in args[0] for y in product(*args[1:])]
 
 ### combinations 
 def combinations(x, n):
@@ -394,5 +428,88 @@ def date2num(y, m, d):
     return 365*y+y//4+y//400-y//100+d+(153*m+8)//5
 
 
+class Fenwick: 
+    """Fenwick tree (Peter Fenwick 1994) aka binary indexed tree is a tree 
+    data structure implemented via array to efficiently compute prefix sum."""
+
+    def __init__(self, n: int):
+        """Initialize a Fenwick tree with n values."""
+        self.nums = [0]*(n+1)
+
+    def sum(self, k: int) -> int: 
+        """Return the prefix sum aka sum(nums[:k])."""
+        ans = 0
+        while k:
+            ans += self.nums[k]
+            k &= k-1 # unset last set bit 
+        return ans
+
+    def add(self, k: int, x: int) -> None: 
+        """Add the ith element with value x to Fenwick tree."""
+        k += 1
+        while k < len(self.nums): 
+            self.nums[k] += x
+            k += k & -k 
+
+
+class Trie:
+    """Trie aka digital tree or prefix tree is a tree data structure to 
+    efficiently store strings. This implementation uses nested dictionaries."""
+
+    def __init__(self):
+        """Initialize the trie by defining the root."""
+        self.root = {}
+
+    def insert(self, word: str) -> None:
+        """Insert the word to the trie."""
+        node = self.root
+        for letter in word: 
+            node = node.setdefault(letter, {}) # move along the trie
+        node["#"] = word #sentinel 
+
+    def search(self, word: str) -> bool:
+        """Return True if word can be found on the trie."""
+        node = self.root
+        for letter in word:
+            if letter not in node: return False 
+            node = node[letter]
+        return node.get("#", False)
+
+
+class UnionFind:
+    """UnionFind aka disjoint-set or disjoint-set union is a data structure 
+    that stores a collection of disjoint sets."""
+
+    def __init__(self, N: int):
+        self.count = N               # count of disjoint components
+        self.parent = list(range(N)) # parent array (to reflect subsets)
+        self.rank = [1] * N          # size of subtree
+
+    def find(self, p: int, halving: bool=True) -> int:
+        if p != self.parent[p]:
+            self.parent[p] = self.find(self.parent[p]) # path compression
+        return self.parent[p]
+
+    def union(self, p: int, q: int, ranking: bool=True) -> bool:
+        prt, qrt = self.find(p), self.find(q)
+        if prt == qrt: return False #already linked
+        if ranking and self.rank[prt] > self.rank[qrt]: 
+            prt, qrt = qrt, prt #p-tree is smaller 
+        self.count -= 1
+        self.parent[prt] = qrt #link p-tree to q-tree
+        self.rank[qrt] += self.rank[prt] #update q-tree size
+        return True 
+
+
 if __name__ == "__main__":
+
     print(date2num(2020, 1, 15) - date2num(2019, 12, 31))
+
+    # Fenwick tree
+    nums = [1, 7, 3, 0, 5, 8, 3, 2, 6, 2, 1, 1, 4, 5]
+    fen = Fenwick(len(nums))
+    for i, x in enumerate(nums): fen.add(i, x) 
+
+    print(fen.sum(5))  # 16
+    print(fen.sum(10)) # 37
+    print(fen.sum(14)) # 48

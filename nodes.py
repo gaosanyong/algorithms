@@ -12,13 +12,13 @@ NodeBST - node on binary search tree
 Following are the generally used ways for traversing trees.
 """
 
-from containers import Stack, Queue
+from collections import deque
 
 class TreeNode:
-	def __init__(self, value):
-		self.val = value
-		self.left = None
-		self.right = None
+    def __init__(self, value, left=None, right=None):
+        self.val = value
+        self.left = left
+        self.right = right
 
 # a naive binary search tree
 tree = TreeNode(4)
@@ -30,50 +30,31 @@ tree.right.left = TreeNode(5)
 tree.right.right = TreeNode(7)
 
 
-def traverse(root, method="dfs", order="in"):
-	"""tree traversal wrapper function
-	
-	Arguments:
-	root   -- root of binary tree
-	method -- bfs (breadth-first search) or dfs (depth-first search)
-	order  -- inorder/preorder/postorder (only for dfs)
-	"""
-	if method.lower() == "bfs":
-		_bfs(root)
-	elif order[:2].lower() == "in":
-		_dfs_in(root)
-	elif order[:3].lower() == "pre":
-		_dfs_pre(root)
-	elif order[:4].lower() == "post":
-		_dfs_post(root)
-	else:
-		raise Exception(f'Invalid arguments {method} and {order}')
-
-
-def _dfs_recur(root):
-	"""recursive depth-first traversal of a binary tree"""
-	if root is None: return 
+def dfs(root):
+    """Recursively depth-first traverse a binary tree."""
+    if not root: return 
     #   inorder traversal : left-node-right
-	#  preorder traversal : node-left-right
-	# postorder traversal : left-right-node
-	traverse(root.left)
-	print(root.val, end=" ")
-	traverse(root.right)
+    #  preorder traversal : node-left-right
+    # postorder traversal : left-right-node
+    yield from dfs(root.left)
+    yield root.val
+    yield from dfs(root.right)
 
 
-def _dfs_in(root):
-	"""inorder depth-first traversal of a binary tree"""
-	node = root 
-	stack = Stack()
-	while node or stack:
-		if node: 
-		# go-left
-			stack.push(node)
-			node = node.left 
-			continue
-		node = stack.pop() # go-back
-		print(node.val, end=" ")
-		node = node.right  # go-right
+def inorder(root):
+    """Inorder depth-first traverse a binary tree."""
+    ans = []
+    node, stack = root, []
+    while node or stack:
+        if node: 
+        # go-left
+            stack.append(node)
+            node = node.left 
+            continue
+        node = stack.pop() # go-back
+        ans.append(node.val)
+        node = node.right  # go-right
+    return ans 
 
 """
 #GENERATOR 
@@ -82,46 +63,70 @@ def inorder(node):
         yield from inorder(node.left)
         yield node.val
         yield from inorder(node.right)
-"""		
+"""     
+
+def preorder(root):
+    """Preorder depth-first traverse a binary tree."""
+    ans = []
+    stack = [root]
+    while stack:
+        node = stack.pop()
+        if node:
+            ans.append(node.val)
+            stack.extend([node.right, node.left])
+    return ans 
 
 
-def _dfs_pre(root):
-	"""preorder depth-first traversal of a binary tree"""
-	stack = Stack()
-	stack.push(root)
-	while stack:
-		node = stack.pop()
-		if node:
-			print(node.val, end=" ")
-			stack.push(node.right)
-			stack.push(node.left)
+def postorder(root):
+    """Postorder depth-first traverse a binary tree."""
+    ans = []
+    node, stack = root, []
+    while node or stack: 
+        if node: 
+            if node.right: stack.append(node.right)
+            stack.append(node)
+            node = node.left
+            continue
+        node = stack.pop()
+        if stack and stack[-1] == node.right: 
+            stack.pop()
+            stack.append(node)
+            node = node.right
+        else:
+            ans.append(node.val)
+            node = None
+    return ans 
 
 
-def _dfs_post(root):
-	"""postorder depth-first traversal of a binary tree"""
-	stack = Stack()
-	value = Stack()
-
-	stack.push(root)
-
-	while stack:
-		node = stack.pop()
-		if node:
-			stack.push(node.left)
-			stack.push(node.right)
-			value.push(node.val)
-
-	while value:
-		print(value.pop(), end=" ")
+def postorder(root):
+    """Postorder depth-first traverse a binary tree."""
+    ans = []
+    stack = [root]
+    while stack:
+        node = stack.pop()
+        if node:
+            ans.append(node.val)
+            stack.extend([node.left, node.right])
+    return ans[::-1]
 
 
-def _bfs(root):
-	"""breadth-first traversal of a binary tree"""
-	queue = Queue()
-	queue.enqueue(root)
-	while queue:
-		node = queue.dequeue()
-		if node is not None:
-			print(node.val, end=" ")
-			queue.enqueue(node.left)
-			queue.enqueue(node.right)
+def bfs(root):
+    """breadth-first traversal of a binary tree"""
+    ans = []
+    queue = deque([root])
+    while queue:
+        node = queue.popleft()
+        if node:
+            ans.append(node.val)
+            queue.append(node.left)
+            queue.append(node.right)
+    return ans 
+
+
+if __name__ == "__main__":
+    print(inorder(tree))
+    print(preorder(tree))
+    print(postorder(tree))
+    print(bfs(tree))
+
+    for x in dfs(tree): print(x) # from generator 

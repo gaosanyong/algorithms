@@ -80,6 +80,7 @@ class UnionFind:
 		"""
 		prt, qrt = self.find(p), self.find(q)
 		if prt == qrt: return #already linked
+		
 		if ranking and self.rank[prt] > self.rank[qrt]: 
 			prt, qrt = qrt, prt #p-tree is smaller 
 		self.count -= 1

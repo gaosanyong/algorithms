@@ -47,35 +47,3 @@ class Trie:
         Returns if there is any word in the trie that starts with the given prefix.
         """
         return self._traverse(prefix)
-
-
-class ToyTrie:
-    """This ToyTrie implementation is primarily for interview purpose. Here, 
-    the trie is implemented via nested dictionaries."""
-
-    def __init__(self):
-        """Initialize the trie by defining the root."""
-        self.root = {}
-
-    def insert(self, word: str) -> None:
-        """Insert the word to the trie."""
-        node = self.root
-        for letter in word: 
-            node = node.setdefault(letter, {}) # move along the trie
-        node["#"] = True #sentinel 
-
-    def search(self, word: str) -> bool:
-        """Return True if word can be found on the trie."""
-        node = self.root
-        for letter in word:
-            if letter not in node: return False 
-            node = node[letter]
-        return node.get("#", False)
-
-    def startsWith(self, prefix: str) -> bool:
-        """Return True if prefix can be found on the trie."""
-        node = self.root
-        for letter in prefix:
-            if letter not in node: return False
-            node = node[letter]
-        return True 

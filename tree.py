@@ -28,6 +28,25 @@ children's keys; while in a min heap-order parent's key is no larger than
 children's keys.
 """
 
+class Fenwick: 
+	def __init__(self, n: int):
+		self.nums = [0]*(n+1)
+
+	def sum(self, k: int) -> int: 
+		"""Return the sum of nums[:k]."""
+		ans = 0
+		while k:
+			ans += self.nums[k]
+			k -= k & -k # unset last set bit 
+		return ans
+
+	def add(self, k: int, x: int) -> None: 
+		k += 1
+		while k < len(self.nums): 
+			self.nums[k] += x
+			k += k & -k 
+
+			
 from containers import Queue, MAXSIZE
 
 class PQueue:

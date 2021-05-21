@@ -13,7 +13,7 @@ Use "internal" left-leaning links as "glue" for 3-nodes
 
 A left-leaning red-black (LLRB) BST is A BST such that:
 * no node has two red links connected to it;
-* every path from root to null link has the same number of black linkts;
+* every path from root to null link has the same number of black links;
 * red links lean left.
 
 A red-black tracks every simple path from a node to a descendant leaf with the same number of black nodes. 
@@ -116,21 +116,73 @@ class LLRB:
 		else:
 			node.val = val 
 
-		if isred(node.right) and not isred(node.left):
 		#rotate left right-leaning 3-node into left-leaning
+		if isred(node.right) and not isred(node.left):
 			node = rotateleft(node)
-		if isred(node.left) and isred(node.left.left):
 		#rotate right 4-node into a temporary position for split
+		if isred(node.left) and isred(node.left.left):
 			node = rotateright(node) #right
-		if isred(node.left) and isread(node.right):
 		#split temporary 4-node into three 2-nodes
+		if isred(node.left) and isread(node.right):
 			flipcolor(node)
 
 		return node 
 
-	def _delete(self, key):
+
+	def moveRedLeft(self, node): 
+		""""""
+		flipcolor(node)
+		if self.isRed(node.right.left): 
+			node.right = self.rotateRight(node.right)
+			node = self.rotateLeft(node)
+		return node 
+
+
+	def moveRedRight(self, node): 
+		""""""
+		flipcolor(node)
+		if not self.isRed(node.left.left): 
+			node = self.rotateRight(node)
+		return node 
+
+
+	def deleteMin(self): 
+		""""""
+		if not self.isRed(self.root.left) and not self.isRed(self.root.right): 
+			self.root.color = RED
+		self.root = self._deleteMin(self.root)
+		if not self.isEmpty(): self.root.color = BLACK 
+
+
+	def _deleteMin(self, node): 
+		""""""
+		if node.left is None: return None
+		if not self.isRed(node.left) and not self.isRed(node.left.left): 
+			node = self.moveRedLeft(node)
+		node.left = _deleteMin(node.left)
+		return self.balance(node)
+
+
+	def _delete(self, node, key):
 		"""LLRB deletion"""
-		pass 
+		if key < node.key: 
+			if not self.isRed(node.left) and not self.isRed(node.left.left): 
+				node = self.moveRedLeft(node)
+			node.left = self._delete(node.left, key)
+		else: 
+			if self.isRed(node.left): 
+				node = self.rotateRight(node)
+			if key == node.key and node.right is None: 
+				return None 
+			if not self.isRed(node.right) and not self.isRed(node.right.left): 
+				node = self.moveRedRight(node) 
+			if key == node.key: 
+				node.val = self.get(node.right, self.getMin(node.right))
+				node.key = self.getMin(node.right).key 
+				node.right = self.deleteMin(node.right) 
+			else: 
+				node.right = self._delete(node.right, key) 
+		return self.balance(node)
 
 
 class BTree:

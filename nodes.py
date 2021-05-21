@@ -101,13 +101,22 @@ def postorder(root):
 def postorder(root):
     """Postorder depth-first traverse a binary tree."""
     ans = []
-    stack = [root]
-    while stack:
-        node = stack.pop()
-        if node:
-            ans.append(node.val)
-            stack.extend([node.left, node.right])
-    return ans[::-1]
+    node, stack = root, []
+    prev = None 
+    while node or stack:
+        if node: 
+            stack.append(node)
+            node = node.left 
+        else: 
+            node = stack[-1] 
+            if node.right and node.right != prev: 
+                node = node.right 
+            else: 
+                ans.append(node.val) 
+                stack.pop() 
+                prev = node 
+                node = None
+    return ans 
 
 
 def bfs(root):

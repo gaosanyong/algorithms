@@ -429,27 +429,72 @@ def date2num(y, m, d):
 
 
 class Fenwick: 
-    """Fenwick tree (Peter Fenwick 1994) aka binary indexed tree is a tree 
-    data structure implemented via array to efficiently compute prefix sum."""
+    """Fenwick tree (Peter Fenwick 1994) aka binary indexed tree (BIT) is a 
+    tree data structure implemented via array to efficiently compute prefix 
+    sums."""
 
     def __init__(self, n: int):
         """Initialize a Fenwick tree with n values."""
-        self.nums = [0]*(n+1)
+        self.tree = [0]*(n+1)
 
     def sum(self, k: int) -> int: 
-        """Return the prefix sum aka sum(nums[:k])."""
+        """Return the prefix sum aka sum(nums[:k+1])."""
+        k += 1
         ans = 0
         while k:
-            ans += self.nums[k]
-            k &= k-1 # unset last set bit 
+            ans += self.tree[k]
+            k -= k & -k # unset last set bit 
         return ans
 
     def add(self, k: int, x: int) -> None: 
-        """Add the ith element with value x to Fenwick tree."""
+        """Add the kth element with value x to Fenwick tree."""
         k += 1
-        while k < len(self.nums): 
-            self.nums[k] += x
+        while k < len(self.tree): 
+            self.tree[k] += x
             k += k & -k 
+
+
+class SegTree: 
+    """A segment tree, aka a statistic tree, is a tree data structure used for 
+    storing information about intervals. It allows querying which of the stored 
+    segments contain a given point."""
+
+    def __init__(self, arr: List[int]): 
+        """Build the setmentation tree."""
+        self.n = len(arr)
+        self.tree = [0]*(4*self.n)
+        self._build(arr, 0, 0, self.n)
+
+    def _build(self, arr: List[int], k: int, lo: int, hi: int) -> None: 
+        """Build segment tree from array."""
+        if lo+1 == hi: 
+            self.tree[k] = arr[lo]
+            return 
+        mid = lo + hi >> 1
+        self._build(arr, 2*k+1, lo, mid)
+        self._build(arr, 2*k+2, mid, hi)
+        self.tree[k] = min(self.tree[2*k+1], self.tree[2*k+2])
+
+    def update(self, idx: int, val: int, k: int = 0, lo: int = 0, hi: int = 0) -> None:
+        """Update segment tree when an array value is changed."""
+        if not hi: hi = self.n
+        if lo+1 == hi: 
+            self.tree[k] = val 
+            return 
+        mid = lo + hi >> 1
+        if idx < mid: 
+            self.update(idx, val, 2*k+1, lo, mid) 
+        else: 
+            self.update(idx, val, 2*k+2, mid, hi)
+        self.tree[k] = min(self.tree[2*k+1], self.tree[2*k+2])
+
+    def query(self, qlo: int, qhi: int, k: int = 0, lo: int = 0, hi: int = 0) -> int: 
+        """Query value from qlo (inclusive) and qhi (exclusive)."""
+        if not hi: hi = self.n
+        if qlo <= lo and hi <= qhi: return self.tree[k] # total overlap 
+        if qhi <= lo or  hi <= qlo: return inf # no overlap 
+        mid = lo + hi >> 1 # partial overlap 
+        return min(self.query(qlo, qhi, 2*k+1, lo, mid), self.query(qlo, qhi, 2*k+2, mid, hi))
 
 
 class Trie:
@@ -499,6 +544,114 @@ class UnionFind:
         self.parent[prt] = qrt #link p-tree to q-tree
         self.rank[qrt] += self.rank[prt] #update q-tree size
         return True 
+
+
+
+def tpsort(graph, indeg):
+    """Topological sort via Kahn's algorithm."""
+    stack = [n for n in graph if indeg[n] == 0]
+    ans = []
+    while stack: 
+        n = stack.pop()
+        ans.append(n)
+        for nn in graph.get(n, []): 
+            indeg[nn] -= 1
+            if indeg[nn] == 0: stack.append(nn)
+    if len(ans) == len(indeg): return ans
+    return [] # cycle detected 
+
+
+def tpsort(graph):
+    """Topological sort via tri-color encoding."""
+        
+    def dfs(n):
+        """Return True if a cycle is detected."""
+        if visited[n]: return visited[n] == -1
+        visited[n] = -1 # GRAY (temporary mark)
+        for nn in digraph.get(n, []):
+            if visited[nn] != 1 and dfs(nn): return True 
+        ans.append(n)
+        visited[n] = 1 # BLACK (permanent mark)
+        return False 
+    
+    ans = []
+    visited = [0]*len(graph) # WHITE
+    for n in range(len(graph)): 
+        if dfs(n): return [] 
+    ans.reverse()
+    return ans 
+
+
+def tarjan(n: int, connections: List[List[int]]) -> List[List[int]]:
+    """Tarjan's algo to find bridges (critical edges) in a graph."""
+    graph = {} # graph as adjacency list 
+    for u, v in connections: 
+        graph.setdefault(u, []).append(v)
+        graph.setdefault(v, []).append(u)
+    
+    def dfs(x, p, step): 
+        """Traverse the graph and collect bridges using Tarjan's algo."""
+        disc[x] = low[x] = step
+        for xx in graph.get(x, []): 
+            if disc[xx] == inf: 
+                step += 1
+                dfs(xx, x, step)
+                low[x] = min(low[x], low[xx])
+                if low[xx] > disc[x]: ans.append([x, xx]) # bridge
+            elif xx != p: low[x] = min(low[x], disc[xx])
+    
+    ans = []
+    low = [inf]*n
+    disc = [inf]*n
+    
+    dfs(0, -1, 0)
+    return ans 
+
+
+def qksort(nums: List[int]) -> List[int]:
+    """Quick sort given array (in-place)."""
+    shuffle(nums)                
+        
+    def sort(lo, hi): 
+        """Sort nums[lo:hi] via quick sort."""
+        if lo + 1 >= hi: return 
+        i, j = lo+1, hi-1
+        while i <= j: 
+            if nums[i] < nums[lo]: i += 1
+            elif nums[j] > nums[lo]: j -= 1
+            else: 
+                nums[i], nums[j] = nums[j], nums[i]
+                i += 1
+                j -= 1
+        nums[lo], nums[j] = nums[j], nums[lo]
+        sort(lo, j)
+        sort(j+1, hi)
+        
+    sort(0, len(nums))
+    return nums
+
+
+def mgsort(nums: List[int]) -> List[int]:
+    """Merge sort given array (in-place)."""
+    
+    def sort(nums, aux, lo, hi): 
+        """Sort nums via merge sort."""
+        if lo+1 >= hi: return 
+        mid = lo + hi >> 1
+        sort(aux, nums, lo, mid)
+        sort(aux, nums, mid, hi)
+        i, j = lo, mid
+        for k in range(lo, hi): 
+            if j >= hi or i < mid and aux[i] < aux[j]: 
+                nums[k] = aux[i]
+                i += 1
+            else: 
+                nums[k] = aux[j]
+                j += 1
+    
+    sort(nums, nums.copy(), 0, len(nums))
+    return nums 
+
 
 
 if __name__ == "__main__":

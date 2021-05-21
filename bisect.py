@@ -1,5 +1,19 @@
 """Binary search & variations"""
 
+
+def bisect(arr, x):
+	"""Binary search (only true) arr = [o, ..., o, x, o, ..., o].
+                                                   ^
+	"""
+	lo, hi = 0, len(arr)-1 # left close & right close 
+	while lo <= hi: 
+		mid = lo + hi >> 1
+		if arr[mid] == x: return mid
+		if arr[mid] < x: lo = mid + 1 
+		else: hi = mid - 1
+	return -1 
+
+
 def bisect_left(arr, x): 
 	"""Binary search array to find (left-most) x."""
 	lo, hi = 0, len(arr)               # detail 1: len(arr) vs len(arr) - 1
@@ -12,16 +26,18 @@ def bisect_left(arr, x):
 
 def bisect_right(arr, x): 
 	"""Binary search array to find (right-most) x."""
-	lo, hi = 0, len(arr)
+	lo, hi = 0, len(arr) # left close & right open 
 	while lo < hi: 
 		mid = lo + hi >> 1
-		if arr[mid] <= x: lo = mid + 1
+		if arr[mid] <= x: lo = mid + 1 # notice "<="
 		else: hi = mid 
 	return lo
 
 
 def bisect_true_first(arr): 
-	"""Binary search array to find first True."""
+	"""Binary search (first True) arr = [0, ..., 0, 1, ..., 1].
+	                                                ^
+    """
 	lo, hi = 0, len(arr)
 	while lo < hi: 
 		mid = lo + hi >> 1
@@ -31,8 +47,10 @@ def bisect_true_first(arr):
 
 
 def bisect_true_last(arr): 
-	"""Binary search array to find last True."""
-	lo, hi = -1, len(arr)-1
+	"""Binary search (last True) arr = [1, ..., 1, 0, ..., 0].
+	                                            ^
+	"""
+	lo, hi = -1, len(arr)-1 # left open & right close 
 	while lo < hi: 
 		mid = lo + hi + 1 >> 1
 		if arr[mid]: lo = mid 

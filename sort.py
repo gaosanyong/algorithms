@@ -286,8 +286,8 @@ def _partition(comparables, lo, hi):
 		while j > lo and comparables[j] > comparables[lo]: j -= 1
 		if i < j:
 			comparables[i], comparables[j] = comparables[j], comparables[i]
-			i += 1 #essential for duplicate keys
-			j -= 1 #essential for duplicate keys
+			i += 1 # essential for duplicate keys
+			j -= 1 # essential for duplicate keys
 
 	comparables[lo], comparables[j] = comparables[j], comparables[lo]
 	return j
@@ -428,9 +428,7 @@ def _partition3(comparables, lo, hi):
 		elif comparables[i] > pivot:
 			gt -= 1
 			comparables[gt], comparables[i] = comparables[i], comparables[gt]
-		else:
-			i += 1
-
+		else: i += 1
 	return lt, gt
 
 
@@ -476,12 +474,12 @@ def _sink(comparables, k, hi):
 	hi          -- higher bound of indices	
 	"""
 	while 2*k + 1 < hi: 
-	#kth node has left child
+	# kth node has left child
 		j = 2*k + 1
 		if j+1 < hi and comparables[j] < comparables[j+1]:
-		#kth node has right child & it is larger
+		# kth node has right child & it is larger
 			j += 1
-		if comparables[k] >= comparables[j]: #already in heap order
+		if comparables[k] >= comparables[j]: # already in heap order
 			break
 		comparables[k], comparables[j] = comparables[j], comparables[k]
 		k = j
@@ -496,15 +494,11 @@ def bsearch(comparables, key):
 	key         -- key to be searched 
 	"""
 	lo, hi = 0, len(comparables)
-
 	while lo < hi:
 		mid = lo + (hi - lo)//2
-		if comparables[mid] > key:
-			hi = mid
-		elif comparables[mid] < key:
-			lo = mid + 1
-		else:
-			return mid
+		if comparables[mid] > key: hi = mid
+		elif comparables[mid] < key: lo = mid + 1
+		else: return mid
 	return None
 
 

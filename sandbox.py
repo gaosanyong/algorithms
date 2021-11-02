@@ -46,3 +46,21 @@ class SegTree:
 arr = [1,3,7,5,8,6,4,2]
 tree = SegTree(arr)
 print(tree.query(4, 7))
+
+
+class RabinKarp: 
+
+    def __init__(self, s): 
+        """Calculate rolling hash of s"""
+        self.m = 1_111_111_111_111_111_111
+        self.pow = [1]
+        self.roll = [0] # rolling hash 
+
+        p = 1_000_000_007
+        for x in s: 
+            self.pow.append(self.pow[-1] * p % self.m)
+            self.roll.append((self.roll[-1] * p + x) % self.m)
+
+    def query(self, i, j): 
+        """Return rolling hash of s[i:j]"""
+        return (self.roll[j] - self.roll[i] * self.pow[j-i]) % self.m

@@ -46,14 +46,13 @@ def inorder(root):
     ans = []
     node, stack = root, []
     while node or stack:
-        if node: 
-        # go-left
+        if node: # go-left
             stack.append(node)
             node = node.left 
-            continue
-        node = stack.pop() # go-back
-        ans.append(node.val)
-        node = node.right  # go-right
+        else: 
+            node = stack.pop() # go-back
+            ans.append(node.val)
+            node = node.right  # go-right
     return ans 
 
 """
@@ -109,8 +108,7 @@ def postorder(root):
             node = node.left 
         else: 
             node = stack[-1] 
-            if node.right and node.right != prev: 
-                node = node.right 
+            if node.right and node.right != prev: node = node.right 
             else: 
                 ans.append(node.val) 
                 stack.pop() 

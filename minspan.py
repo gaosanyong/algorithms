@@ -675,7 +675,7 @@ class FordFulkerson:
 		return self.marked[v]
 
 """
-MAXIMUM FLWO ALGORITHMS
+MAXIMUM FLOW ALGORITHMS
 year | method                   | worst case                 | discovered by 
 -----------------------------------------------------------------------------------
 1951 | simplex                  | E**3 * U                   | Danzig

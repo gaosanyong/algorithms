@@ -223,7 +223,7 @@ def KMP(pattern, text):
     for i in range(1, len(pattern)):
         while k and pattern[k] != pattern[i]: 
             k = lps[k-1]
-        if pattern[i] == pattern[k]: k += 1
+        if pattern[k] == pattern[i]: k += 1
         lps.append(k)
     
     """Given an lps array which indicates where to start a new match in the 
@@ -429,7 +429,8 @@ def date2num(y, m, d):
 
 
 class Fenwick: 
-    """Fenwick tree (Peter Fenwick 1994) aka binary indexed tree (BIT) is a 
+    """Fenwick tree for range sum query (RSQ).
+    Fenwick tree (Peter Fenwick 1994) aka binary indexed tree (BIT) is a 
     tree data structure implemented via array to efficiently compute prefix 
     sums."""
 
@@ -437,7 +438,7 @@ class Fenwick:
         """Initialize a Fenwick tree with n values."""
         self.tree = [0]*(n+1)
 
-    def sum(self, k: int) -> int: 
+    def query(self, k: int) -> int: 
         """Return the prefix sum aka sum(nums[:k+1])."""
         k += 1
         ans = 0
@@ -450,8 +451,31 @@ class Fenwick:
         """Add the kth element with value x to Fenwick tree."""
         k += 1
         while k < len(self.tree): 
-            self.tree[k] += x
+            self.tree[k] += x # add on top of existing value
             k += k & -k 
+
+
+class Fenwick: 
+    """Fenwick tree for range max query (RMQ)."""
+    def __init__(self, n: int): 
+        """Initialize a Fenwick tree with n values."""
+        self.data = [0]*(n+1)
+
+    def query(self, k: int) -> int: 
+        """Return prefix max aka max(nums[:k+1])."""
+        k += 1
+        ans = 0 
+        while k:
+            ans = max(ans, self.data[k])
+            k -= k & (-k)
+        return ans 
+            
+    def update(self, k: int, x: int) -> None: 
+        """Update the kth element with value x to Fenwick tree."""
+        k += 1
+        while k < len(self.data): 
+            self.data[k] = max(self.data[k], x) # update to max
+            k += k & (-k)
 
 
 class SegTree: 
@@ -482,10 +506,8 @@ class SegTree:
             self.tree[k] = val 
             return 
         mid = lo + hi >> 1
-        if idx < mid: 
-            self.update(idx, val, 2*k+1, lo, mid) 
-        else: 
-            self.update(idx, val, 2*k+2, mid, hi)
+        if idx < mid: self.update(idx, val, 2*k+1, lo, mid) 
+        else: self.update(idx, val, 2*k+2, mid, hi)
         self.tree[k] = min(self.tree[2*k+1], self.tree[2*k+2])
 
     def query(self, qlo: int, qhi: int, k: int = 0, lo: int = 0, hi: int = 0) -> int: 
@@ -546,9 +568,10 @@ class UnionFind:
         return True 
 
 
+# Cycle detection for undirected graph utilizes Union-Find data structure.
 
 def tpsort(graph, indeg):
-    """Topological sort via Kahn's algorithm."""
+    """Topological sort for digraph via Kahn's algorithm."""
     stack = [n for n in graph if indeg[n] == 0]
     ans = []
     while stack: 
@@ -562,7 +585,7 @@ def tpsort(graph, indeg):
 
 
 def tpsort(graph):
-    """Topological sort via tri-color encoding."""
+    """Topological sort for digraph via tri-color encoding."""
         
     def dfs(n):
         """Return True if a cycle is detected."""
@@ -605,6 +628,34 @@ def tarjan(n: int, connections: List[List[int]]) -> List[List[int]]:
     disc = [inf]*n
     
     dfs(0, -1, 0)
+    return ans 
+
+
+def hasEulerianPath(graph): 
+    """Return True if given graph has an Eulerian path."""
+    indeg = [0]*len(graph)
+    outdeg = [0]*len(graph)
+    for u, nodes in graph: 
+        outdeg[u] = len(nodes)
+        for v in nodes: indeg[v] += 1
+    start = end = 0 
+    for x in range(len(graph)): 
+        if abs(indeg[x] - outdeg[x]) > 1: return False 
+        if outdeg[x] - indeg[x] == 1: start += 1
+        elif indeg[x] - outdeg[x] == 1: end += 1
+    return start == end == 0 or start == end == 1
+
+
+def hierholzer(graph):
+    """Return an Eulerian path via Hierholzer algo"""
+    ans = []
+
+    def fn(x): 
+        """Return Eulerian path via dfs."""
+        while graph[x]: fn(graph[x].pop()) 
+        ans.append(x)
+
+    ans.reverse()
     return ans 
 
 
@@ -652,6 +703,25 @@ def mgsort(nums: List[int]) -> List[int]:
     sort(nums, nums.copy(), 0, len(nums))
     return nums 
 
+
+def manacher(s: str) -> str:               
+    """Return longest palindromic substring via Manacher's algo."""
+    ss = "#" + "#".join(s) + "#" # augmented string (even-length palindromes)
+    n = len(ss)
+    hlen = [0] * n # half-length
+    center = right = 0
+    for i in range(n):
+        if i < right: hlen[i] = min(right-i, hlen[2*center-i])
+        while 0 <= i-1-hlen[i] and i+1+hlen[i] < len(ss) and ss[i-1-hlen[i]] == ss[i+1+hlen[i]]: hlen[i] += 1
+        if right < i+hlen[i]: center, right = i, i+hlen[i]
+    xx, ii = max((x, i) for i, x in enumerate(hlen))
+    return s[(ii-xx)//2 : (ii+xx)//2]
+
+
+def fibonacci(n): 
+    """Return nth Fibonacci number using Binet formula"""
+    phi = (1 + sqrt(5))/2
+    return round((phi**n - (1-phi)**n)/sqrt(5))
 
 
 if __name__ == "__main__":

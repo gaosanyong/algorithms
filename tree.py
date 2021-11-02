@@ -37,7 +37,7 @@ class Fenwick:
         """Initialize a Fenwick tree with n values."""
         self.nums = [0]*(n+1)
 
-    def sum(self, k: int) -> int: 
+    def query(self, k: int) -> int: 
         """Return the prefix sum aka sum(nums[:k+1])."""
         k += 1
         ans = 0

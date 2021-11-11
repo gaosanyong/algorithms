@@ -1,10 +1,11 @@
 class UnionFind {
-    vector<int> parent, rank; 
 public: 
+    vector<int> parent, rank; 
     UnionFind(int n) {
         parent.resize(n); 
         iota(begin(parent), end(parent), 0); 
-        rank = vector<int>(n, 1); 
+        rank.resize(n); 
+        fill(rank.begin(), rank.end(), 1); 
     } 
     
     int find(int p) {
